@@ -14,7 +14,12 @@ class CookieJWTAuthentication(JWTAuthentication):
             return None
 
         # Validate the token
-        validated_token = self.get_validated_token(raw_token)
+        try:
+            validated_token = self.get_validated_token(raw_token)
+        except Exception:
+            # If token is invalid (expired, etc.), return None to treat as AnonymousUser
+            # This allows public endpoints to still be accessible
+            return None
 
         # Return the user and the token
         return self.get_user(validated_token), validated_token
