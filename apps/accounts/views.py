@@ -102,7 +102,17 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
+        print(f"DEBUG: Login Attempt. Data: {request.data}")
+        try:
+            response = super().post(request, *args, **kwargs)
+        except Exception as e:
+            print(f"DEBUG: Login Exception: {e}")
+            raise e
+            
+        print(f"DEBUG: Login Response Status: {response.status_code}")
+        if response.status_code != 200:
+            print(f"DEBUG: Login Error Data: {response.data}")
+            
         if response.status_code == 200:
             access_token = response.data.get('access')
             refresh_token = response.data.get('refresh')
