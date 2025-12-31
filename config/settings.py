@@ -157,8 +157,10 @@ CORS_ALLOW_CREDENTIALS = True
 # CSRF Settings
 CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 CSRF_COOKIE_HTTPONLY = False  # Allow JS to read the CSRF cookie (required for SPA)
-CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
+SESSION_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 CSRF_COOKIE_SECURE = not DEBUG # Use True in production (HTTPS)
+SESSION_COOKIE_SECURE = not DEBUG
 
 # DRF Settings
 REST_FRAMEWORK = {

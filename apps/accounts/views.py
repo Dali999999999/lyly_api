@@ -85,7 +85,7 @@ def set_jwt_cookies(response, access_token, refresh_token):
         value=access_token,
         httponly=True,
         secure=not settings.DEBUG,  # Use secure in production
-        samesite='Lax',
+        samesite='None' if not settings.DEBUG else 'Lax', # Allow cross-site in prod
         max_age=3600 # 1 hour
     )
     response.set_cookie(
@@ -93,7 +93,7 @@ def set_jwt_cookies(response, access_token, refresh_token):
         value=refresh_token,
         httponly=True,
         secure=not settings.DEBUG,
-        samesite='Lax',
+        samesite='None' if not settings.DEBUG else 'Lax', # Allow cross-site in prod
         max_age=86400 # 1 day
     )
     return response
