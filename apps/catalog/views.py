@@ -17,12 +17,25 @@ from rest_framework.response import Response
 from rest_framework import status
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    queryset = Category.objects.filter(is_deleted=False).annotate(
-        product_count=Count('products', filter=Q(products__is_deleted=False))
-    )
+    # Default queryset (modified in get_queryset)
+    queryset = Category.objects.filter(is_deleted=False)
     serializer_class = CategorySerializer
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['is_active']
+    
+    def get_queryset(self):
+        queryset = Category.objects.filter(is_deleted=False).annotate(
+            product_count=Count('products', filter=Q(products__is_deleted=False))
+        )
+        
+        # Admin Mode: Return all (Active + Inactive)
+        if self.request.user.is_staff and self.request.query_params.get('mode') == 'admin':
+            return queryset
+            
+        # Public Mode (Default): Return only Active
+        return queryset.filter(is_active=True)
 
     @action(detail=False, methods=['get'], permission_classes=[permissions.IsAdminUser])
     def trash(self, request):
@@ -70,7 +83,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAdminOrReadOnly]
     parser_classes = (MultiPartParser, FormParser, JSONParser)
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['category', 'is_featured', 'is_new']
+    filterset_fields = ['category', 'is_featured', 'is_new', 'is_active']
     search_fields = ['name', 'description']
     ordering_fields = ['price', 'created_at']
 
@@ -78,9 +91,13 @@ class ProductViewSet(viewsets.ModelViewSet):
         # Optimization: Fetch category and images in the same query
         queryset = Product.objects.select_related('category').prefetch_related('images')
         
-        if self.request.user.is_staff:
+        # Admin Mode: Return all (Active + Inactive)
+        if self.request.user.is_staff and self.request.query_params.get('mode') == 'admin':
             return queryset.filter(is_deleted=False)
-        return queryset.filter(is_active=True, is_deleted=False)
+
+        # Public Mode (Default): Return only Active
+        # Also ensure category is active
+        return queryset.filter(is_active=True, is_deleted=False, category__is_active=True)
 
     def perform_destroy(self, instance):
         instance.delete() # Uses SoftDeleteModel.delete()

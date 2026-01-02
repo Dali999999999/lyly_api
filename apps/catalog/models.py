@@ -7,6 +7,7 @@ class Category(SoftDeleteModel):
     slug = models.SlugField(unique=True, blank=True)
     image = models.ImageField(upload_to='categories/', null=True, blank=True)
     description = models.TextField(blank=True)
+    is_active = models.BooleanField(default=True)
 
     class Meta:
         verbose_name_plural = "Categories"
