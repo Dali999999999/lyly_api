@@ -23,7 +23,7 @@ urlpatterns = [
     path('api/orders/', include('apps.orders.urls')), # New Orders API
     path('api/reviews/', include('apps.reviews.urls')),
     path('api/', include('apps.coupons.urls')), # Coupons API
-    path('api/', include('apps.shipping.urls')), # Shipping API
+    path('api/shipping/', include('apps.shipping.urls')), # Shipping API
     path('api/', include('apps.accounts.urls_users')), # Users API direct access
     path('api/core/', include('apps.core.urls')), # Site Settings & Core
 
